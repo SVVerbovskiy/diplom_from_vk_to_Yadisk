@@ -3,9 +3,11 @@ from datetime import datetime
 import configparser
 from tqdm import tqdm
 import json
+from art import tprint
 
 config = configparser.ConfigParser()  # создаём объекта парсера
 config.read("config.ini")  # читаем конфиг
+
 
 
 def time_converter(unix_time):
@@ -36,12 +38,6 @@ class VK:
         self.params = {'access_token': self.token, 'v': self.version}
         self.json, self.export_dict = self._sort_info()
 
-    def _albums_info(self):
-        URL = 'https://api.vk.com/method/photos.getAlbums'
-        params = {'owner_id': self.id,
-                  'photo_sizes': 1
-                  }
-
     def _get_photo_info(self):
         """Метод для получения количества фотографий и массива фотографий"""
         URL = 'https://api.vk.com/method/photos.get'
@@ -50,6 +46,7 @@ class VK:
                   'photo_sizes': 1,
                   'extended': 1,
                   'rev': 1,
+                  'count': 1000
                   }
         res = requests.get(URL, params={**self.params, **params}).json()['response']
         return res['count'], res['items']
@@ -143,8 +140,13 @@ class Yandex:
 
 
 if __name__ == '__main__':
-    tokenVK = config["VK"]["TOKEN"]  # токен и id доступа хранятся в файле (построчно)
-    tokenYandex = config["YD"]["TOKEN"]  # хранится только токен яндекс диска
+    tprint('From VK to YandexDisk')
+
+    config['VK']['ID'] = input('Введите id пользователя: ')
+    config["YD"]["TOKEN"] = input('Токен с Полигона Яндекс Диска: ')
+
+    tokenVK = config["VK"]["TOKEN"]  # токен и id доступа хранятся в файле config.ini
+    tokenYandex = config["YD"]["TOKEN"]  # токен хранится в файле config.ini
 
     my_VK = VK(tokenVK)  # Получение JSON списка с информацией о фотографиях
 
@@ -152,5 +154,5 @@ if __name__ == '__main__':
         json.dump(my_VK.json, outfile)
 
     # Создаем экземпляр класса Yandex с параметрами: "Имя папки", "Токен" и количество скачиваемых файлов
-    my_yandex = Yandex('VK photo copies', tokenYandex, 15)
+    my_yandex = Yandex('VK photo copies', tokenYandex, 5)
     my_yandex.create_copy(my_VK.export_dict)  # Вызываем метод create_copy для копирования фотографий с VK на Я-диск
