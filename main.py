@@ -21,12 +21,12 @@ def max_dpi(search_dict):
     """Функция возвращает ссылку на фото самого большого размера"""
     max_size = 0
     need_value = 0
-    for i in range(len(search_dict)):
-        file_size = search_dict[i].get('width') * search_dict[i].get('height')
-        if file_size > max_size:
+    for i in search_dict['sizes']:
+        file_size = i['width'] * i['height']
+        if file_size >= max_size:
             max_size = file_size
             need_value = i
-    return search_dict[need_value].get('url'), search_dict[need_value].get('type')
+    return need_value['url'], need_value['type']
 
 
 class VK:
@@ -55,10 +55,10 @@ class VK:
         """Метод для получения словаря с параметрами фотографий"""
         photo_count, photo_items = self._get_photo_info()
         result = {}
-        for i in range(photo_count):
-            likes_count = photo_items[i]['likes']['count']
-            url_download, picture_size = max_dpi(photo_items[i]['sizes'])
-            time_warp = time_converter(photo_items[i]['date'])
+        for i in photo_items:
+            likes_count = i['likes']['count']
+            url_download, picture_size = max_dpi(i)
+            time_warp = time_converter(i['date'])
             new_value = result.get(likes_count, [])
             new_value.append({'likes_count': likes_count,
                               'add_name': time_warp,
@@ -74,7 +74,7 @@ class VK:
         picture_dict = self._get_logs_only()
         counter = 0
         for elem in picture_dict.keys():
-            for value in picture_dict[elem]:
+            for value in picture_dict[elem]: # методе _sort_info здесь лучше итерироваться по ключам и значениям for elem in picture_dict.keys(): через .items()
                 if len(picture_dict[elem]) == 1:
                     file_name = f'{value["likes_count"]}.jpeg'
                 else:
@@ -84,7 +84,7 @@ class VK:
                     sorted_dict[file_name] = picture_dict[elem][counter]['url_picture']
                     counter += 1
                 else:
-                    sorted_dict[file_name] = picture_dict[elem][0]['url_picture']
+                    sorted_dict[file_name] = picture_dict[elem][0]['url_picture'] #в программе берется всегда первая ссылка в этом месте picture_dict[elem][0]['url_picture']
         return json_list, sorted_dict
 
 
@@ -142,8 +142,8 @@ class Yandex:
 if __name__ == '__main__':
     tprint('From VK to YandexDisk')
 
-    config['VK']['ID'] = input('Введите id пользователя: ')
-    config["YD"]["TOKEN"] = input('Токен с Полигона Яндекс Диска: ')
+    # config['VK']['ID'] = input('Введите id пользователя: ')
+    # config["YD"]["TOKEN"] = input('Токен с Полигона Яндекс Диска: ')
 
     tokenVK = config["VK"]["TOKEN"]  # токен и id доступа хранятся в файле config.ini
     tokenYandex = config["YD"]["TOKEN"]  # токен хранится в файле config.ini
