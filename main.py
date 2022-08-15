@@ -72,19 +72,16 @@ class VK:
         json_list = []
         sorted_dict = {}
         picture_dict = self._get_logs_only()
-        counter = 0
-        for elem in picture_dict.keys():
-            for value in picture_dict[elem]: # методе _sort_info здесь лучше итерироваться по ключам и значениям for elem in picture_dict.keys(): через .items()
-                if len(picture_dict[elem]) == 1:
-                    file_name = f'{value["likes_count"]}.jpeg'
-                else:
-                    file_name = f'{value["likes_count"]} {value["add_name"]}.jpeg'
-                json_list.append({'file name': file_name, 'size': value["size"]})
-                if value["likes_count"] == 0:
-                    sorted_dict[file_name] = picture_dict[elem][counter]['url_picture']
-                    counter += 1
-                else:
-                    sorted_dict[file_name] = picture_dict[elem][0]['url_picture'] #в программе берется всегда первая ссылка в этом месте picture_dict[elem][0]['url_picture']
+        for key, value in picture_dict.items():
+            if len(picture_dict[key]) == 1:
+                file_name = f'{value[0]["likes_count"]}.jpeg'
+                json_list.append({'file name': file_name, 'size': value[0]["size"]})
+                sorted_dict[file_name] = value[0]['url_picture']
+            else:
+                for i in picture_dict[key]:
+                    file_name = f'{i["likes_count"]} {i["add_name"]}.jpeg'
+                    json_list.append({'file name': file_name, 'size': i["size"]})
+                    sorted_dict[file_name] = i['url_picture']
         return json_list, sorted_dict
 
 
@@ -142,8 +139,8 @@ class Yandex:
 if __name__ == '__main__':
     tprint('From VK to YandexDisk')
 
-    # config['VK']['ID'] = input('Введите id пользователя: ')
-    # config["YD"]["TOKEN"] = input('Токен с Полигона Яндекс Диска: ')
+    config['VK']['ID'] = input('Введите id пользователя: ')
+    config["YD"]["TOKEN"] = input('Токен с Полигона Яндекс Диска: ')
 
     tokenVK = config["VK"]["TOKEN"]  # токен и id доступа хранятся в файле config.ini
     tokenYandex = config["YD"]["TOKEN"]  # токен хранится в файле config.ini
